@@ -1,20 +1,45 @@
-var express = require('express');
-var cors = require('cors');
-require('dotenv').config()
+require('dotenv').config();
+const express = require('express');
+const multer = require('multer');
+const cors = require('cors');
+const path = require('path');
 
-var app = express();
+const app = express();
+const upload = multer({ dest: 'uploads/' }); // Destination for uploaded files
 
+// Middleware
 app.use(cors());
-app.use('/public', express.static(process.cwd() + '/public'));
+app.use(express.static(path.join(__dirname, 'views')));
 
-app.get('/', function (req, res) {
-  res.sendFile(process.cwd() + '/views/index.html');
+// Serve homepage
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'index.html'));
+});
+
+// API endpoint for file analysis
+app.post('/api/fileanalyse', upload.single('upfile'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+
+  const { originalname, mimetype, size } = req.file;
+  res.json({
+    name: originalname,
+    type: mimetype,
+    size,
+  });
+});
+
+// Catch-all for undefined routes
+app.use((req, res) => {
+  res.status(404).json({ error: 'Endpoint not found' });
+});
+
+// Start server on 0.0.0.0 for Gitpod
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`App is running on port ${PORT}`);
 });
 
 
 
-
-const port = process.env.PORT || 3000;
-app.listen(port, function () {
-  console.log('Your app is listening on port ' + port)
-});

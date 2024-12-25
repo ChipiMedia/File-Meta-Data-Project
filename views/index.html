@@ -1,34 +1,55 @@
 <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>File Metadata Microservice</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>File Metadata Microservice</h1>
+    <form id="upload-form" action="/api/fileanalyse" method="post" enctype="multipart/form-data">
+      <label for="file-input">Choose a file:</label>
+      <input id="file-input" type="file" name="upfile" required>
+      <button type="submit">Upload File</button>
+    </form>
+    <div id="loader" class="loader" style="display: none;"></div>
+    <div id="response"></div>
+  </div>
+  <footer>
+    <p>By <a href="https://github.com/ChipiMedia" target="_blank">Chipi Media</a></p>
+  </footer>
+  <script>
+    const uploadForm = document.getElementById('upload-form');
+    const loader = document.getElementById('loader');
+    const responseDiv = document.getElementById('response');
 
-<html>
-   <head>
-      <title>File Metadata</title>
-      <link rel="shortcut icon" href="https://cdn.freecodecamp.org/universal/favicons/favicon-32x32.png" type="image/x-icon"/>
-      <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css">
-      <link href="/public/style.css" rel="stylesheet" type="text/css">
-   </head>
+    uploadForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(uploadForm);
 
-   <body>
-      <div class="container">
-        <h1>API Project: File Metadata Microservice</h1>
+      loader.style.display = 'block'; // Show loader
+      responseDiv.innerHTML = ''; // Clear previous response
 
-        <h2>Usage:</h2>
-        <p>
-          Please Upload a File ...
-        </p>
-        <div class="view">
-          <h3 id="output"></h3>
-          <form enctype="multipart/form-data" method="POST" action="/api/fileanalyse">
-            <input id="inputfield" type="file" name="upfile">
-            <input id="button" type="submit" value="Upload">
-          </form>
-        </div>
-      </div>
-      <div class="footer">
-        <p>
-          by 
-          <a href="http://www.freecodecamp.com">freeCodeCamp</a>
-        </p>
-      </div>
-   </body>
+      try {
+        const response = await fetch('/api/fileanalyse', {
+          method: 'POST',
+          body: formData,
+        });
+        const data = await response.json();
+
+        loader.style.display = 'none'; // Hide loader
+        responseDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+      } catch (err) {
+        loader.style.display = 'none'; // Hide loader
+        responseDiv.innerHTML = `<p class="error">An error occurred while uploading the file. Please try again.</p>`;
+        console.error(err);
+      }
+    });
+  </script>
+</body>
 </html>
+
+
